@@ -1,0 +1,6 @@
+- add create / author name
+- update the final structure to look more like nalapod
+- add result limit
+- add date limit (save only results that are for example not older then 7days etc.)
+- store results in db
+- create a frontend
