@@ -48,6 +48,9 @@ const scrapeTikTok = async () => {
   );
   const filteredVideos = videoUrls.filter((x) => x !== null);
   for (let v = 0; v < filteredVideos.length; v++) {
+    if (v >= 1) {
+      break;
+    }
     const final = {};
     final.url = filteredVideos[v];
     const splitUrl = final.url.split("/");
@@ -96,3 +99,5 @@ const scrapeTikTok = async () => {
 };
 
 scrapeTikTok();
+
+// 1684256400&x
