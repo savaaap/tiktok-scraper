@@ -24,12 +24,12 @@ const scrapeInstaPost = async () => {
   const src = await imgElement.getProperty("src");
   const finalSrc = await src.jsonValue();
   // GET OWNER NAME
-  await page.waitForSelector('a[role="link"]');
-  const profileNameElement = await headerElement.$('a[role="link"]');
+  await page.waitForSelector("h2");
+  const profileNameElement = await page.$("h2");
   const profileName = await page.evaluate((el) => {
-    return el.textContent;
+    return el?.textContent;
   }, profileNameElement);
-  console.log(profileName);
+  console.log(profileNameElement);
   console.log({
     avatar: finalSrc,
     profileName,
