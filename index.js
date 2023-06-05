@@ -1,8 +1,9 @@
 import puppeteer from "puppeteer";
 
-const url = "https://www.tiktok.com/search?q=jokic";
-const scrollTimeout = 1000; // adjust as needed
+const url = "https://www.tiktok.com/search/video?q=traveling";
+const scrollTimeout = 1500; // adjust as needed
 const scraped = [];
+const limit = 10;
 
 function extractUnixTimestamp(vidId) {
   // BigInt needed as we need to treat vidId as 64 bit decimal. This reduces browser support.
@@ -24,10 +25,18 @@ function tiktokTimestamp(vidId) {
   return humanDateFormat;
 }
 
+const config = {
+  headless: false,
+  slowMo: 10,
+  defaultViewport: null,
+};
+
 const scrapeTikTok = async () => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch(config);
   const page = await browser.newPage();
   await page.goto(url);
+  console.log(`Connected to ${url}`);
+  await page.waitForTimeout(5000);
 
   let previousHeight = 0;
   let currentHeight = await page.evaluate("document.body.scrollHeight");
@@ -37,7 +46,8 @@ const scrapeTikTok = async () => {
     previousHeight = currentHeight;
     currentHeight = await page.evaluate("document.body.scrollHeight");
   }
-  const parentDiv = await page.$("#main-content-general_search");
+  await page.waitForSelector("#main-content-search_video");
+  const parentDiv = await page.$("#main-content-search_video");
   const videoUrls = await parentDiv.$$eval("a", (links) =>
     links.map((link) => {
       if (link.href.includes("/video")) {
@@ -47,8 +57,9 @@ const scrapeTikTok = async () => {
     })
   );
   const filteredVideos = videoUrls.filter((x) => x !== null);
+  console.log(filteredVideos.length);
   for (let v = 0; v < filteredVideos.length; v++) {
-    if (v >= 1) {
+    if (scraped.length >= limit) {
       break;
     }
     const final = {};
@@ -91,6 +102,12 @@ const scrapeTikTok = async () => {
       shareElement
     );
     final.shares = share;
+    // CREATOR NAME
+    const nameElemenet = await page.$('span[data-e2e="browse-username"]');
+    const name = await page.evaluate((el) => {
+      return el?.textContent;
+    }, nameElemenet);
+    final.creatorName = name;
     console.log(final);
     scraped.push(final);
   }

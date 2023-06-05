@@ -1,11 +1,11 @@
 import puppeteer from "puppeteer";
 
-const url = "https://www.instagram.com/kingjames/";
+const url = "https://www.instagram.com/p/CsoKeLHuKWK/";
 const scrollTimeout = 1000; // adjust as needed
 const scraped = [];
 
-const scrapeInstaProfile = async () => {
-  const browser = await puppeteer.launch();
+const scrapeInstaPost = async () => {
+  const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
   await page.goto(url);
 
@@ -19,11 +19,22 @@ const scrapeInstaProfile = async () => {
   }
   await page.waitForSelector('main[role="main"]');
   const headerElement = await page.$("header");
+  // GET AVATAR
   const imgElement = await headerElement.$("img");
   const src = await imgElement.getProperty("src");
   const finalSrc = await src.jsonValue();
-  console.log(finalSrc);
+  // GET OWNER NAME
+  await page.waitForSelector("h2");
+  const profileNameElement = await page.$("h2");
+  const profileName = await page.evaluate((el) => {
+    return el?.textContent;
+  }, profileNameElement);
+  console.log(profileNameElement);
+  console.log({
+    avatar: finalSrc,
+    profileName,
+  });
   await browser.close();
 };
 
-scrapeInstaProfile();
+scrapeInstaPost();
